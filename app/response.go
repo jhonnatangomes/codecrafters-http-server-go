@@ -18,6 +18,19 @@ func EmptyOkResponse() *Response {
 	return OkResponse("")
 }
 
+func FileOkResponse(file string) *Response {
+	return &Response{
+		version:    "HTTP/1.1",
+		statusCode: 200,
+		status:     "OK",
+		headers: map[string]string{
+			"Content-Type":   "application/octet-stream",
+			"Content-Length": strconv.Itoa(len(file)),
+		},
+		body: file,
+	}
+}
+
 func OkResponse(body string) *Response {
 	headers := make(map[string]string)
 	if body != "" {

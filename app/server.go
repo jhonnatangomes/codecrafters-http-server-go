@@ -1,13 +1,18 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
+	"path"
 	"strings"
 )
 
+var dir = flag.String("directory", ".", "directory to serve")
+
 func main() {
+	flag.Parse()
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
 		fmt.Println("Failed to bind to port 4221")
@@ -33,6 +38,16 @@ func handleRequest(conn net.Conn) {
 		OkResponse(data).send(conn)
 	case request.path == "/user-agent":
 		OkResponse(request.headers["User-Agent"]).send(conn)
+	case strings.HasPrefix(request.path, "/files"):
+		filename := strings.Split(request.path, "/files/")[1]
+		if file, err := os.ReadFile(path.Join(*dir, filename)); err == nil {
+			FileOkResponse(string(file)).send(conn)
+		} else if os.IsNotExist(err) {
+			NotFoundResponse().send(conn)
+		} else {
+			fmt.Println("Error reading file: ", err.Error())
+			os.Exit(1)
+		}
 	default:
 		NotFoundResponse().send(conn)
 	}
