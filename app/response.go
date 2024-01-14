@@ -11,14 +11,14 @@ type Response struct {
 	statusCode int
 	status     string
 	headers    map[string]string
-	body       string
+	body       []byte
 }
 
 func EmptyOkResponse() *Response {
-	return OkResponse("")
+	return OkResponse(nil)
 }
 
-func FileOkResponse(file string) *Response {
+func FileOkResponse(file []byte) *Response {
 	return &Response{
 		version:    "HTTP/1.1",
 		statusCode: 200,
@@ -31,9 +31,19 @@ func FileOkResponse(file string) *Response {
 	}
 }
 
-func OkResponse(body string) *Response {
+func FileCreatedResponse() *Response {
+	return &Response{
+		version:    "HTTP/1.1",
+		statusCode: 201,
+		status:     "Created",
+		headers:    nil,
+		body:       nil,
+	}
+}
+
+func OkResponse(body []byte) *Response {
 	headers := make(map[string]string)
-	if body != "" {
+	if body != nil {
 		headers["Content-Type"] = "text/plain"
 		headers["Content-Length"] = strconv.Itoa(len(body))
 	}
@@ -52,7 +62,7 @@ func NotFoundResponse() *Response {
 		statusCode: 404,
 		status:     "Not Found",
 		headers:    nil,
-		body:       "",
+		body:       nil,
 	}
 }
 
@@ -62,5 +72,5 @@ func (r *Response) send(conn net.Conn) {
 		conn.Write([]byte(fmt.Sprintf("%s: %s\r\n", header, value)))
 	}
 	conn.Write([]byte("\r\n"))
-	conn.Write([]byte(r.body))
+	conn.Write(r.body)
 }
