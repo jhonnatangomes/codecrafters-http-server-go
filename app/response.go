@@ -33,6 +33,16 @@ func OkResponse(body string) *Response {
 	}
 }
 
+func NotFoundResponse() *Response {
+	return &Response{
+		version:    "HTTP/1.1",
+		statusCode: 404,
+		status:     "Not Found",
+		headers:    nil,
+		body:       "",
+	}
+}
+
 func (r *Response) send(conn net.Conn) {
 	conn.Write([]byte(fmt.Sprintf("%s %s %s\r\n", r.version, strconv.Itoa(r.statusCode), r.status)))
 	for header, value := range r.headers {

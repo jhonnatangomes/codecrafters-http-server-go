@@ -20,12 +20,15 @@ func main() {
 	}
 	defer conn.Close()
 	request := newRequest(conn)
-	if request.path == "/" {
+	switch {
+	case request.path == "/":
 		EmptyOkResponse().send(conn)
-	} else if strings.HasPrefix(request.path, "/echo") {
+	case strings.HasPrefix(request.path, "/echo"):
 		data := strings.Split(request.path, "/echo/")[1]
 		OkResponse(data).send(conn)
-	} else {
-		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
+	case request.path == "/user-agent":
+		OkResponse(request.headers["User-Agent"]).send(conn)
+	default:
+		NotFoundResponse().send(conn)
 	}
 }
