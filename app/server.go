@@ -13,12 +13,17 @@ func main() {
 		fmt.Println("Failed to bind to port 4221")
 		os.Exit(1)
 	}
-	conn, err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+		go handleRequest(conn)
 	}
-	defer conn.Close()
+}
+
+func handleRequest(conn net.Conn) {
 	request := newRequest(conn)
 	switch {
 	case request.path == "/":
@@ -31,4 +36,5 @@ func main() {
 	default:
 		NotFoundResponse().send(conn)
 	}
+	conn.Close()
 }
